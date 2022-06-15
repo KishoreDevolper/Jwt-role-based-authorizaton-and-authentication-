@@ -11,10 +11,15 @@ exports.findone = async(req,res)=>{
          try {
               const {id} = req.params;
               const result = await User.query().findById(id)
-              res.status(200).json(result)
-            
-         } catch (error) {
-            res.status(500).json(error)
+              if(result){
+                res.status(200).json(result)
+               }
+               else{
+                res.status(404).json({message:"User Doesn't exist check and try again"})
+               }
+                          
+         } catch (err) {
+            return res.status(500).json({message:"SomeThing Went Wrong Please Try Again",error:err})
          }
           
 
@@ -22,7 +27,7 @@ exports.findone = async(req,res)=>{
 
 exports.register = async(req,res)=>{
     try {
-         console.log("helooo")
+         
          const salt = await bcrypt.genSalt(10);
          const userData = ({
         
@@ -33,16 +38,16 @@ exports.register = async(req,res)=>{
        })
        if(req.body.roles == "Super Admin"){
         const super_admin = await User.query().insert(userData)  
-        res.status(201).json(super_admin)
+         return res.status(201).json({message:"User Registered Sucessfully",data:super_admin})
         }else{
             if(req.body.roles == "Admin"){
                 const admin = await User.query().insert(userData)  
-                 return res.status(201).json(admin)
+                 return res.status(201).json({message:"User Registered Sucessfully",data:admin})
             }
             else{
                 if(req.body.roles == "user"){
                     const users = await User.query().insert(userData)  
-                    return res.status(201).json(users)
+                    return res.status(201).json({message:"User Registered Sucessfully",data:users})
                 }
             } 
             return res.json("please provide valid role")   
@@ -51,7 +56,7 @@ exports.register = async(req,res)=>{
       
      }catch (error) { 
        
-      res.status(500).json(error)
+        return res.status(500).json({message:"SomeThing Went Wrong Please Try Again",error:err})
     }
      
 
@@ -62,7 +67,7 @@ exports.signin = async(req,res)=>{
             name:req.body.name
         }).then(user=>{
             if(!user){
-                return res.status(404).json("User not found") 
+                return res.status(404).json({message:"User not found"}) 
             }
             var passwordisValid = bcrypt.compareSync(req.body.password,user.password);
             if(!passwordisValid){
@@ -75,6 +80,7 @@ exports.signin = async(req,res)=>{
                 expiresIn:"1d"
             })
             res.status(200).json({
+                
                 name:user.name,
                 email:user.email,
                 roles:user.roles,
@@ -83,6 +89,6 @@ exports.signin = async(req,res)=>{
         });
        
     } catch (error) {
-        res.status(500).json(error)
+        return res.status(500).json({message:"SomeThing Went Wrong Please Try Again",error:err})
     }
 }

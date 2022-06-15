@@ -46,8 +46,11 @@ isSuperAdmin = (req, res, next) => {
 isAdmin = (req, res, next) => {
   
  try {
-    User.query().findById(req.userId).then((user)=>{
-        let check = user.roles;
+    User.query().findById(req.userId).then((user,err)=>{
+        if(!user){
+          res.status(400).json({message:"User Doesn't Exist Check and Try Again"})
+        }else{
+        let check = user.roles 
         if(check == 'Admin'){
          next();
          return;
@@ -55,14 +58,16 @@ isAdmin = (req, res, next) => {
         else{
          res.status(401).send({message:"you are not authorized"})
         }
+      }
       })
+    
  } catch (error) {
     res.status(500).send({message:"something wrong please check and try again"})
  }
 }
 
 isUser = (req, res, next) => {
-    try{
+    try{ 
     User.query().findById(req.userId).then((user)=>{
         let check = user.roles;
         if(check == 'user'){
